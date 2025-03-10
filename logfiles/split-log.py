@@ -33,12 +33,13 @@ def split_file(input_file, chunk_size):
     # Calculate number of chunks needed
     num_chunks = (total_size + chunk_size - 1) // chunk_size
     
-    # Get base filename without path
-    base_name = input_path.name
+    # Get base filename without path and extension
+    base_name = input_path.stem  # Changed from .name to .stem to remove extension
+    extension = input_path.suffix
 
     with open(input_file, 'rb') as f:
         for chunk_num in range(num_chunks):
-            output_file = splits_dir / f"{base_name}.{chunk_num:03d}"
+            output_file = splits_dir / f"{base_name}.{chunk_num:03d}{extension}"
             current_size = 0
             
             with open(output_file, 'wb') as out:

@@ -11,7 +11,7 @@ def process_json_files(folder_path):
     fieldnames = None
 
     # Process all JSON files
-    json_files = sorted(folder.glob("*.json"), key=lambda x: int(x.stem))
+    json_files = sorted(folder.glob("*.json"))
     if not json_files:
         print("Error: No JSON files found in the specified folder.")
         sys.exit(1)
