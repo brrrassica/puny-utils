@@ -1,14 +1,3 @@
-#!/usr/bin/env python3
-"""
-MQTT to PostgreSQL bridge using current best practices.
-
-Key improvements:
-- Uses MQTTv5 as default with MQTTv3 fallback
-- Implements safe UPSERT to prevent duplicates
-- Proper connection management and error handling
-- Enhanced logging instead of print statements
-"""
-
 import logging
 import paho.mqtt.client as mqtt
 import psycopg2
@@ -18,6 +7,7 @@ import time
 import hashlib
 import os
 from typing import Dict, Any, Optional
+from global_vars import DB_CONFIG, MQTT_CONFIG
 
 # Configure structured logging
 logging.basicConfig(
@@ -29,25 +19,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("mqtt-to-psql")
 
-# Configuration - consider moving to environment variables in production
-DB_CONFIG = {
-    "dbname": os.getenv("DB_NAME", "mqtt_db"),
-    "user": os.getenv("DB_USER", "emqx"),
-    "password": os.getenv("DB_PASSWORD", "emqx"),
-    "host": os.getenv("DB_HOST", "localhost"),
-    "port": os.getenv("DB_PORT", "5432"),
-    "connect_timeout": 5,
-    "options": "-c statement_timeout=5000"
-}
 
-MQTT_CONFIG = {
-    "host": os.getenv("MQTT_HOST", "localhost"),
-    "port": int(os.getenv("MQTT_PORT", "1883")),
-    "client_id": os.getenv("MQTT_CLIENT_ID", "postgres-sink"),
-    "keepalive": 60,
-    "max_inflight": 100,
-    "mqtt_versions": [mqtt.MQTTv5, mqtt.MQTTv311]  # Try v5 first, then v3
-}
 
 class DatabaseConnection:
     """Context manager for safe database connections with proper cleanup."""
