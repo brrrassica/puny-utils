@@ -127,11 +127,21 @@ def decode_addr_payload(payload: bytes) -> list[dict]:
     Decode an `addr` message payload.
     Returns a list of dictionaries with the peer information.
     """
-    # The payload starts with a CompactSize count
-    if not payload:
-        return []
-
-    count, offset = payload[0], 1  # Simple CompactSize (only for count < 0xFD)
+    # Parse CompactSize count
+    first = payload[0]
+    if first < 0xFD:
+        count = first
+        offset = 1
+    elif first == 0xFD:
+        count = struct.unpack_from("<H", payload, 1)[0]
+        offset = 3
+    elif first == 0xFE:
+        count = struct.unpack_from("<I", payload, 1)[0]
+        offset = 5
+    else:  # 0xFF
+        count = struct.unpack_from("<Q", payload, 1)[0]
+        offset = 9
+    print(f"DEBUG addr payload count={count}")
     peers = []
 
     for _ in range(count):
@@ -144,9 +154,12 @@ def decode_addr_payload(payload: bytes) -> list[dict]:
         offset += 16
         port = struct.unpack_from(">H", payload, offset)[0]  # network byte order
         offset += 2
+        print(f"DEBUG raw entry: ts={ts}, services={services}, ip_bytes={ip_bytes.hex()}, port={port}")
 
-        # Convert IPv6‑mapped IPv4 to dotted‑quad if applicable
-        if ip_bytes[:12] == b"\x00" * 10 + b"\xff\xff":
+        # Convert IPv4‑compatible or IPv4‑mapped IPv6 to dotted‑quad if applicable
+        if ip_bytes[:12] == b"\x00" * 12:
+            ip = socket.inet_ntop(socket.AF_INET, ip_bytes[12:])
+        elif ip_bytes[:10] == b"\x00" * 10 + b"\xff\xff":
             ip = socket.inet_ntop(socket.AF_INET, ip_bytes[12:])
         else:
             ip = socket.inet_ntop(socket.AF_INET6, ip_bytes)
