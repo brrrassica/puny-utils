@@ -120,7 +120,7 @@ def read_msg(sock: socket.socket) -> tuple[str, bytes]:
 
 
 # ----------------------------------------------------------------------
-# Addr message decoding (for completeness)
+# Addr message decoding
 # ----------------------------------------------------------------------
 def decode_addr_payload(payload: bytes) -> list[dict]:
     """
@@ -141,7 +141,7 @@ def decode_addr_payload(payload: bytes) -> list[dict]:
     else:  # 0xFF
         count = struct.unpack_from("<Q", payload, 1)[0]
         offset = 9
-    print(f"DEBUG addr payload count={count}")
+    #print(f"DEBUG addr payload count={count}")
     peers = []
 
     for _ in range(count):
@@ -154,7 +154,7 @@ def decode_addr_payload(payload: bytes) -> list[dict]:
         offset += 16
         port = struct.unpack_from(">H", payload, offset)[0]  # network byte order
         offset += 2
-        print(f"DEBUG raw entry: ts={ts}, services={services}, ip_bytes={ip_bytes.hex()}, port={port}")
+        #print(f"DEBUG raw entry: ts={ts}, services={services}, ip_bytes={ip_bytes.hex()}, port={port}")
 
         # Convert IPv4‑compatible or IPv4‑mapped IPv6 to dotted‑quad if applicable
         if ip_bytes[:12] == b"\x00" * 12:
